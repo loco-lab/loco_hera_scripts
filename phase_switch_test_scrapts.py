@@ -22,6 +22,71 @@ print('saving to:',filename)
 np.savez(filename,D=D,PSlog=PSlog)
 #remove 20dB of attenuation from systematic
 
+#plot this kind of data
+In [628]: plt.figure()
+     ...: data = np.load('herasnap.2022-07-13-1445.npz')
+     ...: for i,d in enumerate(data['D']):
+     ...:     if data['PSlog'][i]:color='tab:blue'
+     ...:     else: color='tab:orange'
+     ...:     plt.plot(dB(np.abs(d)),color=color)
+     ...: plt.title('blue=PS ON, orange=PS OFF\n eq=2047 (max)')
+     ...: plt.xlabel('chan [out of 0-250MHz]')
+     ...: plt.ylabel('amp [db]')
+     ...: plt.show()
+
+#heres a more advanced one 
+In [705]: plt.figure()
+     ...: data = np.load('herasnap.2022-07-14-1144.npz')
+     ...: data_sys_off = np.load('herasnap.2022-07-14-1232.npz')
+     ...: data_walsh4 = np.load('herasnap.2022-07-14-1304.npz')
+     ...: for i,d in enumerate(data['D']):
+     ...:     if data['PSlog'][i]:color='tab:blue'
+     ...:     else: color='tab:orange'
+     ...:     plt.plot(dB(np.abs(d)),color=color)
+     ...: plt.plot(dB(np.abs(data_sys_off['D'][1])),color='tab:blue',ls='--')
+     ...: plt.plot(dB(np.abs(data_sys_off['D'][0])),color='tab:orange',ls='--')
+     ...: plt.plot(dB(np.abs(data_walsh4['D'][1])),color='tab:blue',ls=':')
+     ...: plt.title('blue=PS ON, orange=PS OFF, dash=SYS OFF\n dotted=walsh4')
+     ...: plt.xlabel('chan [out of 0-250MHz]')
+     ...: plt.ylabel('dB')
+     ...: plt.grid()
+     ...: plt.show(block=False)
+
+In [761]: #plot the residual (PS ON - NO SYS) for different power levels
+     ...: data_lo = np.load('herasnap.2022-07-14-1144.npz')
+     ...: data_hi = np.load('herasnap.2022-07-14-1802.npz')
+     ...: data_sys_off=np.load('herasnap.2022-07-14-1232.npz')
+     ...: plt.figure()
+     ...: for i,d in enumerate(data_sys_off['D']): #I THINK these all have 4 integra
+     ...: tions
+     ...:     if data['PSlog'][i]:color='tab:blue'
+     ...:     else: color='tab:orange'
+     ...:     res_mag_hi = np.abs(data_hi['D'][i]) - np.abs(d)
+     ...:     res_mag_lo = np.abs(data_lo['D'][i]) - np.abs(d)
+     ...:     plt.plot(dB(res_mag_hi),ls = '-',color=color)
+     ...:     plt.plot(dB(res_mag_lo),ls=':',color=color)
+     ...: plt.title('ang(sys)-abs(no sys)\n solid=reference, dotted=-5dB')
+     ...: plt.show(block=False)
+
+
+#a complicated beasty that compares switching and sys on off
+In [663]: plt.figure()
+     ...: data = np.load('herasnap.2022-07-13-1510.npz')
+     ...: data_sys_off = np.load('herasnap.2022-07-13-1445.npz')
+     ...: for i,d in enumerate(data['D']):
+     ...:     if data['PSlog'][i]:color='tab:blue'
+     ...:     else: color='tab:orange'
+     ...:     plt.scatter(d[277].real,d[277].imag,color=color)
+     ...: plt.scatter(data_sys_off['D'][1][277].real,data_sys_off['D'][1][277].imag,
+     ...: color='tab:blue',marker='*')
+     ...: plt.scatter(data_sys_off['D'][0][277].real,data_sys_off['D'][0][277].imag,
+     ...: color='tab:orange',marker='*')
+     ...: plt.title('blue=PS ON, orange=PS OFF\n circles=SYS ON, stars=SYS OFF\n ch=
+     ...: 277')
+     ...: plt.xlabel('real')
+     ...: plt.ylabel('imag')
+     ...: plt.grid()
+     ...: plt.show(block=False)
 
 
 # test 2: cycles through 3000 walsh delay settings. Long, takes 20h
